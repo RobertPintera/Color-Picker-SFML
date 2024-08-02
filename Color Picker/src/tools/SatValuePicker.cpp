@@ -4,7 +4,7 @@ void SatValuePicker::initTextureBox()
 {
 	textureBox.create(width + 1, height + 1);
 	imageBox.create(width + 1, height + 1, sf::Color(0, 0, 0, 0));
-	updateBox(0);
+	updateHueBox(0);
 }
 
 void SatValuePicker::initTexturePointer()
@@ -71,7 +71,7 @@ void SatValuePicker::setPositionPicker(uint8_t s, uint8_t v)
 	pointerShape.setPosition(box.getPosition().x + this->s * 360.f / 100.f, box.getPosition().y + box.getLocalBounds().width - this->v * 360.f / 100.f);
 }
 
-uint8_t SatValuePicker::getSaturaion()
+uint8_t SatValuePicker::getSaturation()
 {
 	return s;
 }
@@ -91,7 +91,7 @@ sf::Vector2f SatValuePicker::getSize()
 	return box.getSize();
 }
 
-void SatValuePicker::updateBox(uint16_t h)
+void SatValuePicker::updateHueBox(uint16_t h)
 {
 	int a = 0, b = 0;
 	uint8_t c1 = static_cast<float>(h) / 60.f;
@@ -140,7 +140,7 @@ void SatValuePicker::updateBox(uint16_t h)
 
 
 
-void SatValuePicker::update(const sf::Vector2f mousePosition)
+void SatValuePicker::update(const sf::Vector2f& mousePosition)
 {
 	setState(IDLE);
 	if (box.getGlobalBounds().contains(mousePosition))

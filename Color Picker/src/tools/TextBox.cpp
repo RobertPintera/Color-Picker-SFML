@@ -77,7 +77,7 @@ bool TextBox::getIsTextEntered()
 }
 
 
-void TextBox::update(const sf::Vector2f mousePosition)
+void TextBox::update(const sf::Vector2f& mousePosition)
 {
 	if(getState() == DEFAULT)
 	{

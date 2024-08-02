@@ -92,7 +92,7 @@ uint16_t HuePicker::getHue()
 	return h;
 }
 
-void HuePicker::update(const sf::Vector2f mousePosition)
+void HuePicker::update(const sf::Vector2f& mousePosition)
 {
 	setState(IDLE);
 	if (hueBox.getGlobalBounds().contains(mousePosition))

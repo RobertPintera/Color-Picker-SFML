@@ -28,7 +28,7 @@ public:
 	uint16_t getHue();
 	
 	//Functions
-	void update(const sf::Vector2f mousePosition);
+	void update(const sf::Vector2f& mousePosition);
 	void render(sf::RenderTarget& target);
 };
 

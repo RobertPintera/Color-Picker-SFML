@@ -7,8 +7,8 @@ void App::initVariables()
 
 void App::initWindow()
 {
-	window = new sf::RenderWindow(sf::VideoMode(1000,600), "Color Picker", sf::Style::Default);
-	window->setFramerateLimit(60);
+	window.create(sf::VideoMode(1024, 600), "Color Picker", sf::Style::Default);
+	window.setFramerateLimit(60);
 }
 
 void App::initFont()
@@ -18,15 +18,14 @@ void App::initFont()
 
 void App::initTools()
 {
-	color = new sf::RectangleShape();
-	color->setSize(sf::Vector2f(370, 50));
-	color->setPosition(550,460);
-	color->setFillColor(sf::Color(255, 0, 0));
-
 	colorSVPicker = new SatValuePicker(100, 50);
+	colorSVPicker->setPositionPicker(INIT_SATURATION, INIT_VALUE);
 
 	huePicker = new HuePicker(100, 50 + colorSVPicker->getSize().y + 50);
+	huePicker->setPositionPointer(INIT_HUE);
 
+	colorSVPicker->updateHueBox(huePicker->getHue());
+	
 	labels["H"] = new Label(620, 50, &font, sf::Color(255, 255, 255), 32, "H");
 	labels["S"] = new Label(620, 170, &font, sf::Color(255, 255, 255), 32, "S");
 	labels["V"] = new Label(620, 290, &font, sf::Color(255, 255, 255), 32, "V");
@@ -35,17 +34,25 @@ void App::initTools()
 	labels["B"] = new Label(840, 290, &font, sf::Color(255, 255, 255), 32, "B");
 
 	textBoxes["H"] = new TextBox(550, 100, 150, 50, &font, sf::Color(255, 255, 255), sf::Color(181, 181, 181), sf::Color(181, 181, 181), 10, 32);
+	textBoxes["H"]->setText(std::to_string(huePicker->getHue()));
 	textBoxes["S"] = new TextBox(550, 220, 150, 50, &font, sf::Color(255, 255, 255), sf::Color(181, 181, 181), sf::Color(181, 181, 181), 10, 32);
+	textBoxes["S"]->setText(std::to_string(colorSVPicker->getSaturation()));
 	textBoxes["V"] = new TextBox(550, 340, 150, 50, &font, sf::Color(255, 255, 255), sf::Color(181, 181, 181), sf::Color(181, 181, 181), 10, 32);
-	textBoxes["R"] = new TextBox(770, 100, 150, 50, &font, sf::Color(255, 255, 255), sf::Color(181, 181, 181), sf::Color(181, 181, 181), 10, 32);
-	textBoxes["G"] = new TextBox(770, 220, 150, 50, &font, sf::Color(255, 255, 255), sf::Color(181, 181, 181), sf::Color(181, 181, 181), 10, 32);
-	textBoxes["B"] = new TextBox(770, 340, 150, 50, &font, sf::Color(255, 255, 255), sf::Color(181, 181, 181), sf::Color(181, 181, 181), 10, 32);
+	textBoxes["V"]->setText(std::to_string(colorSVPicker->getValue()));
 
+	sf::Color colorRGB = convertHSVToRGB(huePicker->getHue(), colorSVPicker->getSaturation(), colorSVPicker->getValue());
 	
-	for (auto& i : textBoxes)
-	{
-		i.second->setText("0");
-	}
+	textBoxes["R"] = new TextBox(770, 100, 150, 50, &font, sf::Color(255, 255, 255), sf::Color(181, 181, 181), sf::Color(181, 181, 181), 10, 32);
+	textBoxes["R"]->setText(std::to_string(colorRGB.r));
+	textBoxes["G"] = new TextBox(770, 220, 150, 50, &font, sf::Color(255, 255, 255), sf::Color(181, 181, 181), sf::Color(181, 181, 181), 10, 32);
+	textBoxes["G"]->setText(std::to_string(colorRGB.g));
+	textBoxes["B"] = new TextBox(770, 340, 150, 50, &font, sf::Color(255, 255, 255), sf::Color(181, 181, 181), sf::Color(181, 181, 181), 10, 32);
+	textBoxes["B"]->setText(std::to_string(colorRGB.b));
+
+	colorShow = new sf::RectangleShape();
+	colorShow->setSize(sf::Vector2f(370, 50));
+	colorShow->setPosition(550, 460);
+	colorShow->setFillColor(colorRGB);
 }
 
 App::App()
@@ -58,9 +65,12 @@ App::App()
 
 App::~App()
 {
-	delete color;
+	delete colorShow;
+	colorShow = nullptr;
 	delete colorSVPicker;
+	colorSVPicker = nullptr;
 	delete huePicker;
+	huePicker = nullptr;
 
 	for (auto i = this->textBoxes.begin(); i != this->textBoxes.end(); i++)
 	{
@@ -73,9 +83,6 @@ App::~App()
 		delete i->second;
 		i->second = nullptr;
 	}
-
-	delete window;
-	window = nullptr;
 }
 
 int App::stringToInt(std::string str)
@@ -157,11 +164,11 @@ sf::Color App::convertHSVToRGB(uint16_t h, uint8_t s, uint8_t v)
 void App::updateEvents()
 {
 	HandleEvents::instance.setIsTextEntered(false);
-	while (window->pollEvent(sfEvent))
+	while (window.pollEvent(sfEvent))
 	{
 		if (sfEvent.type == sf::Event::Closed)
 		{
-			window->close();
+			window.close();
 		}
 		else if (sfEvent.type == sf::Event::TextEntered)
 		{
@@ -175,8 +182,8 @@ void App::updateEvents()
 void App::updateMousePosition()
 {
 	mousePositionScreen = sf::Mouse::getPosition();
-	mousePositionWindow = sf::Mouse::getPosition(*this->window);
-	mousePositionView = window->mapPixelToCoords(sf::Mouse::getPosition(*this->window));
+	mousePositionWindow = sf::Mouse::getPosition(window);
+	mousePositionView = window.mapPixelToCoords(sf::Mouse::getPosition(window));
 }
 
 void App::updateTools()
@@ -187,14 +194,14 @@ void App::updateTools()
 	if (colorSVPicker->getState() == ACTIVE || huePicker->getState() == ACTIVE)
 	{
 		textBoxes["H"]->setText(std::to_string(huePicker->getHue()));
-		textBoxes["S"]->setText(std::to_string(colorSVPicker->getSaturaion()));
+		textBoxes["S"]->setText(std::to_string(colorSVPicker->getSaturation()));
 		textBoxes["V"]->setText(std::to_string(colorSVPicker->getValue()));
-		colorSVPicker->updateBox(huePicker->getHue());
-		colorRGB = convertHSVToRGB(huePicker->getHue(), colorSVPicker->getSaturaion(), colorSVPicker->getValue());
+		colorSVPicker->updateHueBox(huePicker->getHue());
+		colorRGB = convertHSVToRGB(huePicker->getHue(), colorSVPicker->getSaturation(), colorSVPicker->getValue());
 		textBoxes["R"]->setText(std::to_string(colorRGB.r));
 		textBoxes["G"]->setText(std::to_string(colorRGB.g));
 		textBoxes["B"]->setText(std::to_string(colorRGB.b));
-		color->setFillColor(colorRGB);
+		colorShow->setFillColor(colorRGB);
 	}
 
 	for (auto& i : textBoxes)
@@ -205,7 +212,7 @@ void App::updateTools()
 			if(i.first == "H")
 				i.second->setText(std::to_string(huePicker->getHue()));
 			else if(i.first == "S")
-				i.second->setText(std::to_string(colorSVPicker->getSaturaion()));
+				i.second->setText(std::to_string(colorSVPicker->getSaturation()));
 			else if (i.first == "V")
 				i.second->setText(std::to_string(colorSVPicker->getValue()));
 			else if (i.first == "R")
@@ -234,13 +241,13 @@ void App::updateTools()
 				if (v > 100)
 					v = 100;
 				huePicker->setPositionPointer(h);
-				colorSVPicker->updateBox(huePicker->getHue());
+				colorSVPicker->updateHueBox(huePicker->getHue());
 				colorSVPicker->setPositionPicker(s, v);
-				colorRGB = convertHSVToRGB(huePicker->getHue(), colorSVPicker->getSaturaion(), colorSVPicker->getValue());
+				colorRGB = convertHSVToRGB(huePicker->getHue(), colorSVPicker->getSaturation(), colorSVPicker->getValue());
 				textBoxes["R"]->setText(std::to_string(colorRGB.r));
 				textBoxes["G"]->setText(std::to_string(colorRGB.g));
 				textBoxes["B"]->setText(std::to_string(colorRGB.b));
-				color->setFillColor(colorRGB);
+				colorShow->setFillColor(colorRGB);
 			}
 			else if (textBoxes["R"]->getState() == ACTIVE || textBoxes["G"]->getState() == ACTIVE || textBoxes["B"]->getState() == ACTIVE)
 			{
@@ -259,10 +266,10 @@ void App::updateTools()
 				textBoxes["S"]->setText(std::to_string(colorHSV.getSaturation()));
 				textBoxes["V"]->setText(std::to_string(colorHSV.getValue()));
 				huePicker->setPositionPointer(stringToInt(textBoxes["H"]->getText()));
-				colorSVPicker->updateBox(huePicker->getHue());
+				colorSVPicker->updateHueBox(huePicker->getHue());
 				colorSVPicker->setPositionPicker(stringToInt(textBoxes["S"]->getText()), stringToInt(textBoxes["V"]->getText()));
 				colorRGB = sf::Color(r, g, b);
-				color->setFillColor(colorRGB);
+				colorShow->setFillColor(colorRGB);
 			}
 		}
 	}
@@ -277,29 +284,29 @@ void App::update()
 
 void App::renderTools()
 {
-	window->draw(*color);
-	colorSVPicker->render(*window);
-	huePicker->render(*window);
+	window.draw(*colorShow);
+	colorSVPicker->render(window);
+	huePicker->render(window);
 	for (auto& i : labels)
 	{
-		i.second->render(*window);
+		i.second->render(window);
 	}
 	for (auto& i : textBoxes)
 	{
-		i.second->render(*window);
+		i.second->render(window);
 	}
 }
 
 void App::render()
 {
-	window->clear();
+	window.clear();
 	renderTools();
-	window->display();
+	window.display();
 }
 
 void App::run()
 {
-	while (window->isOpen())
+	while (window.isOpen())
 	{
 		update();
 		render();

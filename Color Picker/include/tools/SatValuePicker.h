@@ -27,13 +27,13 @@ public:
 
 	void setPositionPicker(uint8_t s, uint8_t v);
 
-	uint8_t getSaturaion();
+	uint8_t getSaturation();
 	uint8_t getValue();
 	sf::Vector2f getPosition();
 	sf::Vector2f getSize();
 
-	void updateBox(uint16_t h);
-	void update(const sf::Vector2f mousePosition);
+	void updateHueBox(uint16_t h);
+	void update(const sf::Vector2f& mousePosition);
 	void render(sf::RenderTarget& target);
 };
 

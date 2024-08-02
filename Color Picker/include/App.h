@@ -7,13 +7,16 @@
 #include "tools/Label.h"
 #include "ColorHSV.h"
 
+#define INIT_HUE 0
+#define INIT_SATURATION 100
+#define INIT_VALUE 100
+
 class App
 {
 private:
 	//Window
-	sf::RenderWindow* window;
+	sf::RenderWindow window;
 	sf::Event sfEvent;
-	sf::Clock clock;
 
 	//Font
 	sf::Font font;
@@ -24,7 +27,7 @@ private:
 	sf::Vector2f mousePositionView;
 
 	//Tools
-	sf::RectangleShape* color;
+	sf::RectangleShape* colorShow;
 	SatValuePicker* colorSVPicker;
 	HuePicker* huePicker;
 	std::map<std::string, Label*> labels;

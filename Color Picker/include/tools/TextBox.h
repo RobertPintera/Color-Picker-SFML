@@ -41,7 +41,7 @@ public:
 	std::string getText();
 	bool getIsTextEntered();
 
-	void update(const sf::Vector2f mousePosition);
+	void update(const sf::Vector2f& mousePosition);
 	void render(sf::RenderTarget& target);
 };
 
